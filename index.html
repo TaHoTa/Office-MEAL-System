@@ -350,6 +350,9 @@ en: {
   eLogin: 'Wrong email or password.', eExists: 'This email already has an account. Sign in instead.',
   ePw: 'Password must be at least 6 characters.', eNotAdmin: 'Only an admin can do this.',
   eRate: 'Type a rate, for example 80.', corrected: 'Correction saved',
+  eRateLimit: 'Too many sign-up emails were sent. In Supabase turn off "Confirm email", wait a few minutes, then try again.',
+  eNoSchema: 'The database is not set up yet. Run 1_schema.sql in the Supabase SQL Editor.',
+  eNetwork: 'Could not reach the server. Check the internet connection and the two values in config.js.',
   xlSummary: 'Summary', xlDaily: 'Daily', xlTitle: 'Office meal report',
 },
 bn: {
@@ -407,6 +410,9 @@ bn: {
   eLogin: 'ইমেইল বা পাসওয়ার্ড ভুল।', eExists: 'এই ইমেইলে আগেই অ্যাকাউন্ট আছে। সাইন ইন করুন।',
   ePw: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।', eNotAdmin: 'এটি শুধু অ্যাডমিন করতে পারেন।',
   eRate: 'রেট লিখুন, যেমন ৮০।', corrected: 'সংশোধন সেভ হয়েছে',
+  eRateLimit: 'অনেক বেশি সাইন-আপ ইমেইল পাঠানো হয়েছে। Supabase এ "Confirm email" বন্ধ করে কয়েক মিনিট পর আবার চেষ্টা করুন।',
+  eNoSchema: 'ডেটাবেস এখনও সেটআপ হয়নি। Supabase SQL Editor এ 1_schema.sql চালান।',
+  eNetwork: 'সার্ভারে পৌঁছানো যায়নি। ইন্টারনেট এবং config.js এর দুটি মান দেখুন।',
   xlSummary: 'সারাংশ', xlDaily: 'দৈনিক', xlTitle: 'অফিস মিল রিপোর্ট',
 }};
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -605,8 +611,11 @@ function errMsg(e) {
   if (/invalid login/i.test(m)) return t('eLogin');
   if (/already registered|already been registered/i.test(m)) return t('eExists');
   if (/password/i.test(m) && /6|short|weak/i.test(m)) return t('ePw');
+  if (/rate limit/i.test(m)) return t('eRateLimit');
+  if (/does not exist|could not find the (table|function)|schema cache/i.test(m)) return t('eNoSchema') + ' [' + m.slice(0, 160) + ']';
+  if (/failed to fetch|networkerror|load failed/i.test(m)) return t('eNetwork');
   console.error(e);
-  return t('eGeneric');
+  return t('eGeneric') + (m ? ' [' + m.slice(0, 160) + ']' : '');
 }
 
 /* =====================================================================
