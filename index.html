@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Office Meal</title>
+<meta name="theme-color" content="#0E4F3D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meal">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --leaf-900: #0A3A2D;
+  --leaf-700: #0E4F3D;
+  --leaf-500: #1C8A66;
+  --leaf-100: #DCEBDD;
+  --turmeric: #F2B61B;
+  --turmeric-soft: #FBE9B0;
+  --rice: #F6F8F1;
+  --paper: #FFFFFF;
+  --ink: #14231D;
+  --muted: #56675E;
+  --line: #D3DCD0;
+  --chili: #C23B26;
+  --chili-soft: #F8E0DA;
+  --radius: 14px;
+  --nav-h: 64px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--rice); color: var(--ink);
+  font-family: "Anek Bangla", "Noto Sans Bengali", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 17px; line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--turmeric); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* ---------- Shell ---------- */
+#app { min-height: 100vh; min-height: 100dvh; }
+.shell { max-width: 560px; margin: 0 auto; padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px); }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px 10px; background: var(--leaf-700); color: #fff;
+}
+.brand { font-weight: 700; font-size: 19px; letter-spacing: .01em; display: flex; align-items: center; gap: 9px; }
+.brand-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--rice); display: grid; place-items: center; }
+.brand-dot::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--turmeric); }
+.lang-btn {
+  background: transparent; border: 1.5px solid rgba(255,255,255,.55); color: #fff;
+  border-radius: 999px; padding: 5px 14px; font-weight: 600; font-size: 15px; min-height: 36px;
+}
+.demo-bar { background: var(--turmeric-soft); color: #5A4300; font-size: 14.5px; padding: 8px 18px; }
+.page { padding: 18px; }
+.page h2 { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.sub { color: var(--muted); font-size: 15.5px; }
+
+/* ---------- Bottom nav ---------- */
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; justify-content: space-around;
+  background: var(--paper); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav button {
+  flex: 1; min-height: var(--nav-h); background: none; border: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+}
+.nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.nav button[aria-current="page"] { color: var(--leaf-700); font-weight: 700; }
+.nav button[aria-current="page"] svg { stroke-width: 2.4; }
+
+/* ---------- Today: the plate ---------- */
+.today-hero { background: var(--leaf-700); color: #fff; padding: 6px 18px 26px; border-radius: 0 0 26px 26px; }
+.today-date { font-size: 27px; font-weight: 700; line-height: 1.15; }
+.status { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 16px; font-weight: 500; }
+.status i { width: 10px; height: 10px; border-radius: 50%; background: var(--turmeric); flex: none; }
+.status.open i { background: #7CE3B4; box-shadow: 0 0 0 4px rgba(124,227,180,.25); }
+.status.locked i { background: #F09A8A; }
+
+.plate-row { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 4vw, 18px); margin-top: 22px; }
+.step-btn {
+  width: clamp(52px, 15vw, 62px); height: clamp(52px, 15vw, 62px); border-radius: 50%; border: 2px solid rgba(255,255,255,.7);
+  background: transparent; color: #fff; font-size: 34px; font-weight: 500; line-height: 1;
+  display: grid; place-items: center; flex: none;
+}
+.step-btn:active:not(:disabled) { background: rgba(255,255,255,.18); }
+.step-btn:disabled { opacity: .28; cursor: default; }
+.plate {
+  width: clamp(132px, 42vw, 172px); height: clamp(132px, 42vw, 172px); border-radius: 50%; flex: none; position: relative;
+  background: radial-gradient(circle at 50% 50%, #FFFFFF 0 55%, #E7ECE4 56% 62%, #F9FBF7 63% 86%, #CBD4C8 87% 100%);
+  box-shadow: 0 10px 0 -4px rgba(0,0,0,.18);
+  display: grid; place-items: center;
+}
+.plate-food {
+  width: 57%; height: 57%; border-radius: 50%; display: grid; place-items: center;
+  background: transparent; transition: background .2s, transform .2s;
+  font-size: clamp(44px, 14vw, 58px); font-weight: 800; color: var(--muted); line-height: 1;
+}
+.plate.has-meal .plate-food { background: var(--turmeric); color: #3B2B00; }
+.plate.is-no .plate-food { color: var(--chili); }
+.plate.bump .plate-food { transform: scale(1.08); }
+.plate-caption { text-align: center; margin-top: 16px; font-size: 18px; font-weight: 600; min-height: 26px; }
+.saved { color: #9FEBC6; font-weight: 500; font-size: 15px; margin-left: 6px; }
+.hero-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.ghost {
+  background: rgba(255,255,255,.12); border: 0; color: #fff; border-radius: 999px;
+  padding: 10px 18px; font-weight: 600; font-size: 16px; min-height: 46px;
+}
+.ghost:disabled { opacity: .35; cursor: default; }
+
+/* ---------- Tally ---------- */
+.tally { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; margin: 18px 18px 0; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.tally div { padding: 12px 6px 10px; text-align: center; border-left: 1px solid var(--line); }
+.tally div:first-child { border-left: 0; }
+.tally b { display: block; font-size: 26px; font-weight: 700; line-height: 1.1; }
+.tally div:first-child b { font-size: 34px; color: var(--leaf-700); }
+.tally span { font-size: 13.5px; color: var(--muted); display: block; line-height: 1.2; margin-top: 3px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 10px 18px; border-radius: 12px; border: 1.5px solid var(--leaf-700);
+  background: var(--leaf-700); color: #fff; font-weight: 600; font-size: 16.5px; text-decoration: none;
+}
+.btn.line { background: transparent; color: var(--leaf-700); }
+.btn.danger { background: transparent; border-color: var(--chili); color: var(--chili); }
+.btn.small { min-height: 38px; padding: 6px 12px; font-size: 15px; border-radius: 10px; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn svg { width: 20px; height: 20px; fill: currentColor; }
+.share-wrap { margin: 14px 18px 0; }
+
+/* ---------- Lists ---------- */
+.group { margin: 22px 18px 0; }
+.group h3 { font-size: 16px; font-weight: 700; color: var(--leaf-700); display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 6px; border-bottom: 2px solid var(--leaf-100); }
+.group h3 small { font-weight: 500; color: var(--muted); font-size: 14.5px; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); min-height: 50px; }
+.rows .name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.rows .name small { display: block; color: var(--muted); font-weight: 400; font-size: 14px; }
+.count { font-weight: 700; font-size: 18px; min-width: 34px; text-align: right; }
+.count.zero { color: var(--muted); font-weight: 500; }
+.tag { font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--leaf-100); color: var(--leaf-900); white-space: nowrap; }
+.tag.edited { background: var(--turmeric-soft); color: #5A4300; }
+.tag.new { background: var(--turmeric); color: #3B2B00; }
+.tag.off { background: var(--chili-soft); color: var(--chili); }
+.tag.paid { background: var(--leaf-100); color: var(--leaf-900); }
+.tag.unpaid { background: var(--chili-soft); color: var(--chili); }
+.icon-btn { width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); display: grid; place-items: center; flex: none; }
+.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: var(--leaf-700); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rows li.person { flex-wrap: wrap; row-gap: 8px; padding: 12px 0; }
+.rows li.person .name { flex: 1 1 240px; }
+.person-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.empty { color: var(--muted); padding: 12px 0; font-size: 15.5px; }
+
+/* ---------- Month switcher + calendar ---------- */
+.monthbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.monthbar strong { font-size: 19px; font-weight: 700; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+.cal .dow { text-align: center; font-size: 13px; color: var(--muted); font-weight: 600; padding: 2px 0 4px; }
+.cal .dow.wk { color: var(--chili); }
+.day {
+  aspect-ratio: 1 / 1.12; border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+  padding: 4px 2px 3px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  font-size: 13px; color: var(--muted); min-width: 0;
+}
+.day .d { align-self: flex-start; padding-left: 4px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+.day .mine { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; line-height: 1; }
+.day.ate .mine { background: var(--turmeric); color: #3B2B00; }
+.day .tot { font-size: 11.5px; line-height: 1; }
+.day.blank { background: transparent; border-style: dashed; }
+.day.future { background: transparent; border-color: transparent; }
+.day.future .d { color: #A9B5AC; }
+.day.today { border: 2px solid var(--leaf-700); }
+.day.sel { background: var(--leaf-100); border-color: var(--leaf-500); }
+.day.pad { visibility: hidden; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--turmeric); vertical-align: -1px; margin-right: 5px; }
+
+/* ---------- Report ---------- */
+.mine-card { margin-top: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 16px; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.kv:last-child { border-bottom: 0; }
+.kv span { color: var(--muted); }
+.kv b { font-size: 19px; font-weight: 700; text-align: right; }
+.rate-form { display: flex; gap: 8px; align-items: flex-end; margin-top: 14px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+.field label { font-size: 14.5px; font-weight: 600; color: var(--muted); }
+.field input {
+  min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--paper);
+  padding: 8px 14px; font-size: 17px; width: 100%;
+}
+.field input:focus { border-color: var(--leaf-500); outline: none; }
+.table-wrap { margin-top: 14px; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+table.report { width: 100%; border-collapse: collapse; font-size: 15.5px; }
+.report th, .report td { padding: 10px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.report th { font-size: 13.5px; color: var(--muted); font-weight: 600; background: var(--rice); }
+.report th:first-child, .report td:first-child { text-align: left; white-space: normal; min-width: 120px; }
+.report tfoot td { font-weight: 700; border-bottom: 0; background: var(--rice); }
+.pay-btn { border: 0; border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 14px; min-height: 34px; }
+.pay-btn.paid { background: var(--leaf-100); color: var(--leaf-900); }
+.pay-btn.unpaid { background: var(--chili-soft); color: var(--chili); }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.actions .btn { flex: 1; min-width: 140px; }
+.print-head { display: none; }
+
+/* ---------- Auth ---------- */
+.auth { max-width: 420px; margin: 0 auto; padding: 0 0 40px; }
+.auth-hero { background: var(--leaf-700); color: #fff; padding: 34px 22px 30px; border-radius: 0 0 26px 26px; }
+.auth-hero h1 { font-size: 32px; font-weight: 800; line-height: 1.12; margin-top: 16px; }
+.auth-hero p { margin-top: 8px; color: #CFE5D8; }
+.auth form { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+.linkish { background: none; border: 0; color: var(--leaf-700); font-weight: 600; text-decoration: underline; padding: 8px 4px; min-height: 40px; }
+.msg { padding: 10px 14px; border-radius: 10px; font-size: 15.5px; }
+.msg.err { background: var(--chili-soft); color: #7E2114; }
+.msg.ok { background: var(--leaf-100); color: var(--leaf-900); }
+
+/* ---------- Dialog + toast ---------- */
+dialog { border: 0; border-radius: 18px; padding: 22px; width: min(92vw, 380px); color: var(--ink); }
+dialog::backdrop { background: rgba(10,58,45,.55); }
+dialog h3 { font-size: 20px; font-weight: 700; }
+.dlg-step { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 18px 0 6px; }
+.dlg-step button { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--leaf-700); background: none; font-size: 28px; color: var(--leaf-700); line-height: 1; }
+.dlg-step output { font-size: 46px; font-weight: 800; min-width: 70px; text-align: center; }
+.dlg-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
+  background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 12px; font-size: 15.5px; z-index: 50; max-width: 92vw; text-align: center;
+}
+.center-note { padding: 60px 24px; text-align: center; color: var(--muted); }
+
+/* ---------- Wider screens (PC) ---------- */
+@media (min-width: 900px) {
+  .shell { max-width: 1080px; padding: 0 0 40px 220px; position: relative; }
+  .nav {
+    top: 0; bottom: 0; right: auto; width: 220px; flex-direction: column; justify-content: flex-start;
+    border-top: 0; border-right: 1px solid var(--line); padding: 84px 12px 12px; gap: 4px;
+    left: max(0px, calc(50% - 540px));
+  }
+  .nav button { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 14px; min-height: 50px; font-size: 16.5px; border-radius: 12px; }
+  .nav button[aria-current="page"] { background: var(--leaf-100); }
+  .topbar { border-radius: 0 0 0 0; }
+  .today-grid { display: grid; grid-template-columns: 400px 1fr; gap: 8px 24px; align-items: start; }
+  .today-hero { border-radius: 0 0 26px 0; padding-bottom: 34px; }
+  .today-side .tally, .today-side .share-wrap, .today-side .group { margin-left: 0; margin-right: 24px; }
+  .cal-grid { display: grid; grid-template-columns: minmax(0, 520px) 1fr; gap: 28px; align-items: start; }
+  .page { padding: 24px 28px; }
+  .toast { bottom: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Print = monthly PDF ---------- */
+@media print {
+  body { background: #fff; font-size: 12pt; }
+  .topbar, .nav, .demo-bar, .no-print, .toast { display: none !important; }
+  .shell { max-width: none; padding: 0; }
+  .page { padding: 0; }
+  .print-head { display: block; margin-bottom: 12px; }
+  .print-head h1 { font-size: 20pt; }
+  .table-wrap { border: 0; overflow: visible; }
+  .report th, .report td { border: 1px solid #999; padding: 6px 8px; }
+  .pay-btn { background: none !important; color: #000 !important; padding: 0; }
+}
+</style>
+</head>
+<body>
+<div id="app"><p class="center-note">Loading…</p></div>
+<dialog id="dlg"></dialog>
+
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   Office Meal Tracker
+   Poll window: 08:00 to 11:30 Asia/Dhaka. The database enforces the lock;
+   the clock in this file only decides what the screen shows.
+   ===================================================================== */
+const CFG = window.MEAL_CONFIG || {};
+const QS = new URLSearchParams(location.search);
+const DEMO = !CFG.SUPABASE_URL || QS.has('demo');
+const OPEN_MIN = 8 * 60, LOCK_MIN = 11 * 60 + 30, MAX_MEALS = 10, ADMIN_MAX = 50;
+
+/* ---------- Language ---------- */
+const TXT = {
+en: {
+  app: 'Office Meal', langBtn: 'বাংলা',
+  navToday: 'Today', navCal: 'Calendar', navReport: 'Report', navPeople: 'People', navMe: 'Profile',
+  demo: 'Demo mode with sample data. Nothing is saved online yet.',
+  stBefore: 'Voting opens at 8:00 am', stOpen: 'Voting open, closes in {t}', stLocked: 'Voting closed at 11:30 am',
+  hm: '{h} h {m} min', mOnly: '{m} min',
+  capNone: 'You haven’t answered yet', capNo: 'You’re not eating today',
+  capOne: '1 meal for you', capMany: '{n} meals: you + {g} guest(s)',
+  capNoneLocked: 'You didn’t answer today', saved: 'Saved',
+  notEating: 'Not eating today', clear: 'Clear my answer',
+  tMeals: 'meals today', tEating: 'eating', tNot: 'not eating', tWait: 'no answer',
+  share: 'Remind on WhatsApp',
+  shareMsg: 'Today’s ({d}) meal: who is going to take? Answer before 11:30 am: {u}',
+  gEating: 'Eating', gNot: 'Not eating', gWait: 'No answer yet',
+  nobody: 'Nobody yet', everyoneAnswered: 'Everyone has answered',
+  edited: 'edited by admin', you: 'you',
+  calTitle: 'Calendar', calSub: 'Your meals and the office total for each day. Tap a day to see who ate.',
+  legMine: 'your meals', legTot: 'small number = office total',
+  dayTotal: '{n} meals', noVotes: 'No meals recorded this day.', pickDay: 'Tap a day to see who ate.',
+  repTitle: 'Monthly report', myMonth: 'Your month', meals: 'Meals', rate: 'Rate per meal', amount: 'Amount', payment: 'Payment',
+  paid: 'Paid', unpaid: 'Unpaid', rateNotSet: 'Not set yet', nothingDue: 'Nothing due',
+  rateLabel: 'Rate per meal for {m} (taka)', saveRate: 'Save rate', rateSaved: 'Rate saved',
+  rateHint: 'One rate applies to the whole month. You can change it any time.',
+  colName: 'Name', colMeals: 'Meals', colAmt: 'Taka', colPay: 'Payment', total: 'Total',
+  excel: 'Download Excel', pdf: 'Print or save PDF', noMeals: 'No meals recorded this month.',
+  removedMark: 'removed', tapToggle: 'Tap a payment label to switch between Paid and Unpaid.',
+  peopleTitle: 'People', peopleSub: 'Anyone can join with the app link. Remove people who should not be here.',
+  roleOwner: 'Owner', roleAdmin: 'Admin', roleMember: 'Member', isNew: 'new',
+  remove: 'Remove', restore: 'Restore', makeAdmin: 'Make admin', dropAdmin: 'Remove admin role',
+  confirmRemove: 'Remove {n}? They will not be able to vote. Their past meals stay in the records.',
+  confirmAdmin: 'Make {n} the admin? The current admin becomes an ordinary member.',
+  meTitle: 'Profile', yourName: 'Your name', saveName: 'Save name', nameSaved: 'Name saved', email: 'Email', role: 'Role',
+  thisMonth: 'This month', language: 'Language', langOther: 'বাংলায় দেখুন',
+  notif: '8:30 am reminder', notifOn: 'Turn on reminder', notifOff: 'Turn off reminder',
+  notifIsOn: 'On for this phone', notifIsOff: 'Off',
+  notifHelp: 'Sends a notification at 8:30 am if you have not answered yet.',
+  notifIos: 'On iPhone: first tap Share, then “Add to Home Screen”, and open the app from the home screen.',
+  notifDenied: 'Notifications are blocked for this site. Allow them in your browser settings, then try again.',
+  notifUnsupported: 'This browser cannot receive notifications.',
+  notifNotSetup: 'Reminders are not set up yet. Ask the app owner.',
+  notifDone: 'Reminder is on', notifStopped: 'Reminder is off',
+  signOut: 'Sign out',
+  authTitle: 'Who is eating at the office today?', authSub: 'Answer between 8:00 and 11:30 am. One tap.',
+  signIn: 'Sign in', signUp: 'Create account', name: 'Full name', password: 'Password',
+  pwHint: 'At least 6 characters',
+  toSignUp: 'New here? Create an account', toSignIn: 'Already joined? Sign in', forgot: 'Forgot password?',
+  resetSent: 'Check your email for a link to set a new password.',
+  checkEmail: 'Account created. Open the link we emailed you, then sign in.',
+  enterEmail: 'Type your email first.', newPw: 'New password', setPw: 'Save new password', pwSet: 'Password changed',
+  removedTitle: 'Your access has been removed', removedSub: 'Ask the office admin if this is a mistake.',
+  dlgTitle: 'Correct meals', dlgSave: 'Save correction', dlgClear: 'Clear this entry', cancel: 'Cancel',
+  eClosed: 'Voting is closed. Ask the admin to correct it.', eGeneric: 'Something went wrong. Check your connection and try again.',
+  eLogin: 'Wrong email or password.', eExists: 'This email already has an account. Sign in instead.',
+  ePw: 'Password must be at least 6 characters.', eNotAdmin: 'Only an admin can do this.',
+  eRate: 'Type a rate, for example 80.', corrected: 'Correction saved',
+  xlSummary: 'Summary', xlDaily: 'Daily', xlTitle: 'Office meal report',
+},
+bn: {
+  app: 'অফিস মিল', langBtn: 'English',
+  navToday: 'আজ', navCal: 'ক্যালেন্ডার', navReport: 'রিপোর্ট', navPeople: 'সদস্য', navMe: 'প্রোফাইল',
+  demo: 'ডেমো মোড, নমুনা ডেটা দিয়ে চলছে। এখনও অনলাইনে কিছু সেভ হচ্ছে না।',
+  stBefore: 'ভোট শুরু সকাল ৮:০০ টায়', stOpen: 'ভোট চলছে, বন্ধ হবে {t} পরে', stLocked: 'ভোট বন্ধ হয়েছে সকাল ১১:৩০ এ',
+  hm: '{h} ঘ {m} মি', mOnly: '{m} মি',
+  capNone: 'আপনি এখনও জানাননি', capNo: 'আজ আপনি খাচ্ছেন না',
+  capOne: 'আপনার ১টি মিল', capMany: '{n}টি মিল: আপনি + {g} জন অতিথি',
+  capNoneLocked: 'আজ আপনি জানাননি', saved: 'সেভ হয়েছে',
+  notEating: 'আজ খাব না', clear: 'আমার উত্তর মুছুন',
+  tMeals: 'আজকের মিল', tEating: 'খাবেন', tNot: 'খাবেন না', tWait: 'জানাননি',
+  share: 'হোয়াটসঅ্যাপে মনে করান',
+  shareMsg: 'আজকের ({d}) মিল কে কে নেবেন? সকাল ১১:৩০ এর আগে জানান: {u}',
+  gEating: 'খাবেন', gNot: 'খাবেন না', gWait: 'এখনও জানাননি',
+  nobody: 'এখনও কেউ নেই', everyoneAnswered: 'সবাই জানিয়েছেন',
+  edited: 'অ্যাডমিন সংশোধিত', you: 'আপনি',
+  calTitle: 'ক্যালেন্ডার', calSub: 'প্রতিদিন আপনার মিল ও অফিসের মোট মিল। কে কে খেয়েছেন দেখতে দিনে চাপ দিন।',
+  legMine: 'আপনার মিল', legTot: 'ছোট সংখ্যা = অফিসের মোট',
+  dayTotal: '{n}টি মিল', noVotes: 'এই দিনে কোনো মিল নেই।', pickDay: 'কে কে খেয়েছেন দেখতে একটি দিনে চাপ দিন।',
+  repTitle: 'মাসিক রিপোর্ট', myMonth: 'আপনার মাস', meals: 'মিল', rate: 'প্রতি মিলের রেট', amount: 'টাকা', payment: 'পেমেন্ট',
+  paid: 'পরিশোধিত', unpaid: 'বাকি', rateNotSet: 'এখনও ঠিক হয়নি', nothingDue: 'কোনো বাকি নেই',
+  rateLabel: '{m} মাসের প্রতি মিলের রেট (টাকা)', saveRate: 'রেট সেভ করুন', rateSaved: 'রেট সেভ হয়েছে',
+  rateHint: 'পুরো মাসের জন্য একটিই রেট। যেকোনো সময় বদলানো যাবে।',
+  colName: 'নাম', colMeals: 'মিল', colAmt: 'টাকা', colPay: 'পেমেন্ট', total: 'মোট',
+  excel: 'এক্সেল ডাউনলোড', pdf: 'প্রিন্ট বা পিডিএফ সেভ', noMeals: 'এই মাসে কোনো মিল নেই।',
+  removedMark: 'বাদ দেওয়া', tapToggle: 'পরিশোধিত বা বাকি বদলাতে পেমেন্ট লেবেলে চাপ দিন।',
+  peopleTitle: 'সদস্য', peopleSub: 'অ্যাপের লিংক দিয়ে যে কেউ যোগ দিতে পারেন। অপ্রয়োজনীয় কাউকে বাদ দিন।',
+  roleOwner: 'মালিক', roleAdmin: 'অ্যাডমিন', roleMember: 'সদস্য', isNew: 'নতুন',
+  remove: 'বাদ দিন', restore: 'ফিরিয়ে আনুন', makeAdmin: 'অ্যাডমিন করুন', dropAdmin: 'অ্যাডমিন থেকে সরান',
+  confirmRemove: '{n} কে বাদ দেবেন? তিনি আর ভোট দিতে পারবেন না। আগের মিলের হিসাব থেকে যাবে।',
+  confirmAdmin: '{n} কে অ্যাডমিন করবেন? বর্তমান অ্যাডমিন সাধারণ সদস্য হয়ে যাবেন।',
+  meTitle: 'প্রোফাইল', yourName: 'আপনার নাম', saveName: 'নাম সেভ করুন', nameSaved: 'নাম সেভ হয়েছে', email: 'ইমেইল', role: 'ভূমিকা',
+  thisMonth: 'এই মাস', language: 'ভাষা', langOther: 'Switch to English',
+  notif: 'সকাল ৮:৩০ এর রিমাইন্ডার', notifOn: 'রিমাইন্ডার চালু করুন', notifOff: 'রিমাইন্ডার বন্ধ করুন',
+  notifIsOn: 'এই ফোনে চালু', notifIsOff: 'বন্ধ',
+  notifHelp: 'আপনি না জানালে সকাল ৮:৩০ এ একটি নোটিফিকেশন আসবে।',
+  notifIos: 'আইফোনে: আগে Share চেপে “Add to Home Screen” করুন, তারপর হোম স্ক্রিন থেকে অ্যাপ খুলুন।',
+  notifDenied: 'এই সাইটের নোটিফিকেশন ব্লক করা আছে। ব্রাউজার সেটিংস থেকে অনুমতি দিয়ে আবার চেষ্টা করুন।',
+  notifUnsupported: 'এই ব্রাউজারে নোটিফিকেশন আসে না।',
+  notifNotSetup: 'রিমাইন্ডার এখনও সেটআপ হয়নি। অ্যাপের মালিককে বলুন।',
+  notifDone: 'রিমাইন্ডার চালু হয়েছে', notifStopped: 'রিমাইন্ডার বন্ধ হয়েছে',
+  signOut: 'সাইন আউট',
+  authTitle: 'আজ অফিসে কে কে খাবেন?', authSub: 'সকাল ৮:০০ থেকে ১১:৩০ এর মধ্যে জানান। এক চাপেই।',
+  signIn: 'সাইন ইন', signUp: 'অ্যাকাউন্ট খুলুন', name: 'পুরো নাম', password: 'পাসওয়ার্ড',
+  pwHint: 'কমপক্ষে ৬ অক্ষর',
+  toSignUp: 'নতুন? অ্যাকাউন্ট খুলুন', toSignIn: 'আগেই যোগ দিয়েছেন? সাইন ইন', forgot: 'পাসওয়ার্ড ভুলে গেছেন?',
+  resetSent: 'নতুন পাসওয়ার্ড দেওয়ার লিংক আপনার ইমেইলে পাঠানো হয়েছে।',
+  checkEmail: 'অ্যাকাউন্ট হয়েছে। ইমেইলে পাঠানো লিংক খুলে তারপর সাইন ইন করুন।',
+  enterEmail: 'আগে আপনার ইমেইল লিখুন।', newPw: 'নতুন পাসওয়ার্ড', setPw: 'নতুন পাসওয়ার্ড সেভ করুন', pwSet: 'পাসওয়ার্ড বদলেছে',
+  removedTitle: 'আপনার অ্যাক্সেস সরিয়ে নেওয়া হয়েছে', removedSub: 'ভুল হয়ে থাকলে অফিস অ্যাডমিনকে জানান।',
+  dlgTitle: 'মিল সংশোধন', dlgSave: 'সংশোধন সেভ করুন', dlgClear: 'এই এন্ট্রি মুছুন', cancel: 'বাতিল',
+  eClosed: 'ভোট বন্ধ। সংশোধনের জন্য অ্যাডমিনকে বলুন।', eGeneric: 'সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।',
+  eLogin: 'ইমেইল বা পাসওয়ার্ড ভুল।', eExists: 'এই ইমেইলে আগেই অ্যাকাউন্ট আছে। সাইন ইন করুন।',
+  ePw: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।', eNotAdmin: 'এটি শুধু অ্যাডমিন করতে পারেন।',
+  eRate: 'রেট লিখুন, যেমন ৮০।', corrected: 'সংশোধন সেভ হয়েছে',
+  xlSummary: 'সারাংশ', xlDaily: 'দৈনিক', xlTitle: 'অফিস মিল রিপোর্ট',
+}};
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } }
+
+const S = {
+  lang: lsGet('meal.lang') || ((navigator.language || '').startsWith('bn') ? 'bn' : 'en'),
+  session: null, me: null, profiles: [], tab: 'today',
+  todayVotes: [], month: null, selDay: null, members: null,
+  authMode: 'in', authMsg: null, recovery: false, pushOn: false, savedFlash: false,
+};
+const monthCache = {};
+
+function t(key, vars) {
+  let s = (TXT[S.lang] && TXT[S.lang][key]) || TXT.en[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+const loc = () => (S.lang === 'bn' ? 'bn-BD' : 'en-GB');
+const num = (n) => Number(n).toLocaleString(S.lang === 'bn' ? 'bn-BD' : 'en-US', { maximumFractionDigits: 2 });
+const taka = (n) => '৳' + num(Math.round(n * 100) / 100);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- Dhaka time (UTC+6, no daylight saving) ---------- */
+let timeShift = 0;
+function dhaka() { return new Date(Date.now() + timeShift + 6 * 3600e3); }   // read with getUTC*
+function todayStr() { return dhaka().toISOString().slice(0, 10); }
+function nowMin() { const d = dhaka(); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
+function pollState() { const m = nowMin(); return m < OPEN_MIN ? 'before' : m < LOCK_MIN ? 'open' : 'locked'; }
+if (DEMO && QS.get('time')) {
+  const [h, m] = QS.get('time').split(':').map(Number);
+  const d = dhaka();
+  timeShift = ((h * 60 + (m || 0)) - (d.getUTCHours() * 60 + d.getUTCMinutes())) * 60e3;
+}
+const dateOf = (str) => new Date(str + 'T00:00:00Z');
+const fmtDate = (str, opts) => new Intl.DateTimeFormat(loc(), Object.assign({ timeZone: 'UTC' }, opts)).format(dateOf(str));
+const fmtMonth = (m) => fmtDate(m + '-01', { month: 'long', year: 'numeric' });
+const daysIn = (m) => { const [y, mo] = m.split('-').map(Number); return new Date(Date.UTC(y, mo, 0)).getUTCDate(); };
+const pad2 = (n) => String(n).padStart(2, '0');
+function shiftMonth(m, by) { const [y, mo] = m.split('-').map(Number); const d = new Date(Date.UTC(y, mo - 1 + by, 1)); return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1); }
+const curMonth = () => todayStr().slice(0, 7);
+
+/* =====================================================================
+   Data layer: Supabase (real) or localStorage (demo)
+   ===================================================================== */
+function check(res) { if (res.error) throw res.error; return res.data; }
+
+function supabaseApi() {
+  const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+  const uid = () => S.session.user.id;
+  return {
+    onAuth(cb) { sb.auth.onAuthStateChange((ev, session) => cb(ev, session)); },
+    async session() { return check(await sb.auth.getSession()).session; },
+    async signIn(email, password) { return check(await sb.auth.signInWithPassword({ email, password })).session; },
+    async signUp(name, email, password) {
+      return check(await sb.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: location.origin + location.pathname } })).session;
+    },
+    async signOut() { await sb.auth.signOut(); },
+    async resetPassword(email) { check(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname })); },
+    async updatePassword(password) { check(await sb.auth.updateUser({ password })); },
+    async myProfile() { return check(await sb.from('profiles').select('id,full_name,role,active,created_at').eq('id', uid()).maybeSingle()); },
+    async profiles() { return check(await sb.from('profiles').select('id,full_name,role,active,created_at').order('full_name')); },
+    async votesForDay(day) { return check(await sb.from('votes').select('user_id,day,meals,admin_edited').eq('day', day)); },
+    async monthVotes(m) {
+      const out = []; const size = 1000;
+      for (let from = 0; ; from += size) {
+        const rows = check(await sb.from('votes').select('user_id,day,meals,admin_edited')
+          .gte('day', m + '-01').lte('day', m + '-' + pad2(daysIn(m)))
+          .order('day').order('user_id').range(from, from + size - 1));
+        out.push(...rows);
+        if (rows.length < size) break;
+      }
+      return out;
+    },
+    async castVote(n) { check(await sb.rpc('cast_vote', { p_meals: n })); },
+    async removeVote() { check(await sb.rpc('remove_vote')); },
+    async adminSetVote(user, day, meals) { check(await sb.rpc('admin_set_vote', { p_user: user, p_day: day, p_meals: meals })); },
+    async rate(m) { const r = check(await sb.from('month_rates').select('rate').eq('month', m + '-01').maybeSingle()); return r ? Number(r.rate) : null; },
+    async prevRate(m) { const r = check(await sb.from('month_rates').select('rate').lt('month', m + '-01').order('month', { ascending: false }).limit(1)); return r.length ? Number(r[0].rate) : null; },
+    async setRate(m, rate) { check(await sb.from('month_rates').upsert({ month: m + '-01', rate, updated_by: uid(), updated_at: new Date().toISOString() })); },
+    async payments(m) { return check(await sb.from('payments').select('user_id,paid').eq('month', m + '-01')); },
+    async setPaid(user, m, paid) { check(await sb.from('payments').upsert({ user_id: user, month: m + '-01', paid, updated_by: uid(), updated_at: new Date().toISOString() })); },
+    async members() { return check(await sb.rpc('admin_members')); },
+    async setActive(user, active) { check(await sb.rpc('admin_set_active', { p_user: user, p_active: active })); },
+    async setAdmin(user) { check(await sb.rpc('owner_set_admin', { p_user: user })); },
+    async updateName(name) { check(await sb.rpc('update_my_name', { p_name: name })); },
+    async savePush(endpoint, p256dh, auth) { check(await sb.rpc('save_push_subscription', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth })); },
+    async deletePush(endpoint) { check(await sb.rpc('delete_push_subscription', { p_endpoint: endpoint })); },
+  };
+}
+
+function demoApi() {
+  const KEY = 'meal.demo.v1';
+  const meId = QS.get('as') === 'member' ? 'u2' : 'u0';
+  let db;
+  try { db = JSON.parse(lsGet(KEY) || 'null'); } catch (e) { db = null; }
+  if (!db || db.seedMonth !== curMonth()) db = seed();
+  function save() { lsSet(KEY, JSON.stringify(db)); }
+  function seed() {
+    let a = 20261117;
+    const rnd = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let x = Math.imul(a ^ a >>> 15, 1 | a); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
+    const names = ['Demo Owner', 'Rafiq Ahmed', 'Nusrat Jahan', 'Tanvir Hasan', 'Sharmin Akter', 'Imran Hossain', 'Farzana Rahman', 'Kamal Uddin', 'সাদিয়া ইসলাম', 'Mahmud Karim'];
+    const today = todayStr();
+    const profiles = names.map((n, i) => ({
+      id: 'u' + i, full_name: n, email: n.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '') + '@example.com',
+      role: i === 0 ? 'owner' : i === 1 ? 'admin' : 'member', active: true,
+      created_at: new Date(Date.now() - (i === 9 ? 2 : 60) * 864e5).toISOString(),
+    }));
+    profiles[8].email = 'sadia@example.com';
+    const votes = [];
+    for (const m of [shiftMonth(curMonth(), -1), curMonth()]) {
+      for (let d = 1; d <= daysIn(m); d++) {
+        const day = m + '-' + pad2(d);
+        if (day >= today) break;
+        const dow = dateOf(day).getUTCDay();
+        if (dow === 5 || dow === 6) continue;
+        for (const p of profiles) {
+          const r = rnd();
+          if (r < 0.68) votes.push({ user_id: p.id, day, meals: r < 0.06 ? 2 : 1, admin_edited: r > 0.66 });
+          else if (r < 0.8) votes.push({ user_id: p.id, day, meals: 0, admin_edited: false });
+        }
+      }
+    }
+    [['u1', 1], ['u3', 2], ['u4', 1], ['u5', 0], ['u7', 1]].forEach(([u, n]) => votes.push({ user_id: u, day: today, meals: n, admin_edited: false }));
+    const rates = {}; rates[shiftMonth(curMonth(), -1)] = 80;
+    return { seedMonth: curMonth(), profiles, votes, rates, payments: {} };
+  }
+  save();
+  const me = () => db.profiles.find((p) => p.id === meId);
+  const needAdmin = () => { if (!['owner', 'admin'].includes(me().role)) throw new Error('NOT_ADMIN'); };
+  const put = (user, day, meals, edited) => {
+    db.votes = db.votes.filter((v) => !(v.user_id === user && v.day === day));
+    if (meals !== null) db.votes.push({ user_id: user, day, meals, admin_edited: edited });
+    save();
+  };
+  const strip = (p) => ({ id: p.id, full_name: p.full_name, role: p.role, active: p.active, created_at: p.created_at });
+  return {
+    onAuth() {},
+    async session() { return { user: { id: meId, email: me().email } }; },
+    async signIn() { return this.session(); }, async signUp() { return this.session(); },
+    async signOut() {}, async resetPassword() {}, async updatePassword() {},
+    async myProfile() { return strip(me()); },
+    async profiles() { return db.profiles.map(strip); },
+    async votesForDay(day) { return db.votes.filter((v) => v.day === day); },
+    async monthVotes(m) { return db.votes.filter((v) => v.day.startsWith(m)); },
+    async castVote(n) { if (pollState() !== 'open') throw new Error('POLL_CLOSED'); put(meId, todayStr(), n, false); },
+    async removeVote() { if (pollState() !== 'open') throw new Error('POLL_CLOSED'); put(meId, todayStr(), null, false); },
+    async adminSetVote(user, day, meals) { needAdmin(); put(user, day, meals, true); },
+    async rate(m) { return m in db.rates ? db.rates[m] : null; },
+    async prevRate(m) { const k = Object.keys(db.rates).filter((x) => x < m).sort().pop(); return k ? db.rates[k] : null; },
+    async setRate(m, rate) { needAdmin(); db.rates[m] = rate; save(); },
+    async payments(m) {
+      const all = Object.entries(db.payments).filter(([k]) => k.startsWith(m + '|')).map(([k, paid]) => ({ user_id: k.split('|')[1], paid }));
+      return ['owner', 'admin'].includes(me().role) ? all : all.filter((p) => p.user_id === meId);
+    },
+    async setPaid(user, m, paid) { needAdmin(); db.payments[m + '|' + user] = paid; save(); },
+    async members() { needAdmin(); return db.profiles.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+    async setActive(user, active) { needAdmin(); const p = db.profiles.find((x) => x.id === user); p.active = active; if (!active) p.role = 'member'; save(); },
+    async setAdmin(user) { db.profiles.forEach((p) => { if (p.role === 'admin') p.role = 'member'; }); if (user) db.profiles.find((p) => p.id === user).role = 'admin'; save(); },
+    async updateName(name) { me().full_name = name; save(); },
+    async savePush() {}, async deletePush() {},
+  };
+}
+
+let api;
+
+/* =====================================================================
+   Loading
+   ===================================================================== */
+const isAdmin = () => S.me && ['owner', 'admin'].includes(S.me.role);
+const isOwner = () => S.me && S.me.role === 'owner';
+const nameOf = (id) => { const p = S.profiles.find((x) => x.id === id); return p ? p.full_name : '?'; };
+const byName = (a, b) => a.full_name.localeCompare(b.full_name);
+
+async function loadCore() {
+  S.me = await api.myProfile();
+  if (!S.me || !S.me.active) return;
+  S.profiles = await api.profiles();
+  await loadToday();
+}
+async function loadToday() { S.todayVotes = await api.votesForDay(todayStr()); }
+async function loadMonth(m, force) {
+  if (monthCache[m] && !force) return monthCache[m];
+  const [votes, rate, payments] = await Promise.all([api.monthVotes(m), api.rate(m), api.payments(m)]);
+  const data = { votes, rate, payments, prevRate: null };
+  if (rate === null && isAdmin()) data.prevRate = await api.prevRate(m);
+  monthCache[m] = data;
+  return data;
+}
+const invalidate = (day) => { delete monthCache[day.slice(0, 7)]; };
+
+function errMsg(e) {
+  const m = String((e && e.message) || e || '');
+  if (m.includes('POLL_CLOSED')) return t('eClosed');
+  if (m.includes('NOT_ADMIN') || m.includes('OWNER_ONLY') || m.includes('OWNER_PROTECTED')) return t('eNotAdmin');
+  if (/invalid login/i.test(m)) return t('eLogin');
+  if (/already registered|already been registered/i.test(m)) return t('eExists');
+  if (/password/i.test(m) && /6|short|weak/i.test(m)) return t('ePw');
+  console.error(e);
+  return t('eGeneric');
+}
+
+/* =====================================================================
+   Rendering
+   ===================================================================== */
+const $app = document.getElementById('app');
+const ICON = {
+  today: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>',
+  cal: '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  report: '<svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>',
+  people: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.9c1.6.8 2.7 2.4 3 5.1"/></svg>',
+  me: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20.5c.8-4 4-6 8-6s7.2 2 8 6"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>',
+  wa: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3zm0 1.8a7.2 7.2 0 1 1-3.7 13.4l-.4-.2-2.3.6.6-2.2-.3-.4A7.2 7.2 0 0 1 12 4.8z"/><path d="M8.5 11h7v1.6h-7zM8.5 8h7v1.6h-7zM8.5 14h4.5v1.6H8.5z"/></svg>',
+};
+
+function render() {
+  document.documentElement.lang = S.lang;
+  document.title = t('app');
+  if (S.recovery) return renderRecovery();
+  if (!S.session) return renderAuth();
+  if (!S.me) { $app.innerHTML = '<p class="center-note">…</p>'; return; }
+  if (!S.me.active) return renderRemoved();
+  const tabs = [['today', 'navToday'], ['cal', 'navCal'], ['report', 'navReport']];
+  if (isAdmin()) tabs.push(['people', 'navPeople']);
+  tabs.push(['me', 'navMe']);
+  const view = { today: vToday, cal: vCal, report: vReport, people: vPeople, me: vMe }[S.tab] || vToday;
+  $app.innerHTML = `
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-dot"></span>${esc(t('app'))}</div>
+        <button class="lang-btn" data-act="lang">${esc(t('langBtn'))}</button>
+      </header>
+      ${DEMO ? `<div class="demo-bar">${esc(t('demo'))}</div>` : ''}
+      <main id="main">${view()}</main>
+    </div>
+    <nav class="nav" aria-label="Main">
+      ${tabs.map(([id, key]) => `<button data-act="tab" data-tab="${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${ICON[id]}<span>${esc(t(key))}</span></button>`).join('')}
+    </nav>`;
+}
+function renderMain() { const m = document.getElementById('main'); if (!m) return render(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+
+/* ---------- Today ---------- */
+const myVote = () => S.todayVotes.find((v) => v.user_id === S.me.id) || null;
+function statusHtml() {
+  const st = pollState();
+  if (st === 'open') {
+    const left = LOCK_MIN - nowMin(); const h = Math.floor(left / 60), m = left % 60;
+    const tm = h ? t('hm', { h: num(h), m: num(m) }) : t('mOnly', { m: num(Math.max(m, 1)) });
+    return `<span class="status open"><i></i>${esc(t('stOpen', { t: tm }))}</span>`;
+  }
+  return `<span class="status ${st}"><i></i>${esc(t(st === 'before' ? 'stBefore' : 'stLocked'))}</span>`;
+}
+function vToday() {
+  const st = pollState(), open = st === 'open';
+  const v = myVote(), n = v ? v.meals : null;
+  const cap = n === null ? t(st === 'locked' ? 'capNoneLocked' : 'capNone') : n === 0 ? t('capNo') : n === 1 ? t('capOne') : t('capMany', { n: num(n), g: num(n - 1) });
+  const active = S.profiles.filter((p) => p.active);
+  const voteBy = {}; S.todayVotes.forEach((x) => { voteBy[x.user_id] = x; });
+  const eating = [], notEating = [], waiting = [];
+  active.slice().sort(byName).forEach((p) => { const x = voteBy[p.id]; if (!x) waiting.push(p); else if (x.meals > 0) eating.push(p); else notEating.push(p); });
+  // people removed later but who voted today still count
+  S.todayVotes.forEach((x) => { if (!active.find((p) => p.id === x.user_id)) { const p = S.profiles.find((q) => q.id === x.user_id); if (p && x.meals > 0) eating.push(p); } });
+  const total = S.todayVotes.reduce((s, x) => s + x.meals, 0);
+  const row = (p) => {
+    const x = voteBy[p.id];
+    return `<li><span class="name">${esc(p.full_name)}${p.id === S.me.id ? ` <span class="tag">${esc(t('you'))}</span>` : ''}${x && x.admin_edited ? ` <span class="tag edited">${esc(t('edited'))}</span>` : ''}</span>
+      ${x ? `<span class="count ${x.meals ? '' : 'zero'}">${x.meals ? '×' + num(x.meals) : '–'}</span>` : ''}
+      ${isAdmin() ? `<button class="icon-btn" data-act="edit" data-user="${p.id}" data-day="${todayStr()}" aria-label="${esc(t('dlgTitle'))}: ${esc(p.full_name)}">${ICON.edit}</button>` : ''}</li>`;
+  };
+  const group = (title, list, emptyKey) => `<section class="group"><h3>${esc(title)} <small>${num(list.length)}</small></h3>
+    ${list.length ? `<ul class="rows">${list.map(row).join('')}</ul>` : `<p class="empty">${esc(t(emptyKey))}</p>`}</section>`;
+  return `
+  <div class="today-grid">
+    <section class="today-hero">
+      <h2 class="today-date">${esc(fmtDate(todayStr(), { weekday: 'long', day: 'numeric', month: 'long' }))}</h2>
+      <div id="status">${statusHtml()}</div>
+      <div class="plate-row">
+        <button class="step-btn" data-act="minus" ${!open || n === null || n === 0 ? 'disabled' : ''} aria-label="−1">−</button>
+        <div class="plate ${n > 0 ? 'has-meal' : n === 0 ? 'is-no' : ''}" id="plate" role="status" aria-live="polite" aria-label="${esc(cap)}">
+          <div class="plate-food">${n === null ? '?' : num(n)}</div>
+        </div>
+        <button class="step-btn" data-act="plus" ${!open || n >= MAX_MEALS ? 'disabled' : ''} aria-label="+1">+</button>
+      </div>
+      <p class="plate-caption">${esc(cap)}${S.savedFlash ? `<span class="saved">✓ ${esc(t('saved'))}</span>` : ''}</p>
+      <div class="hero-actions">
+        <button class="ghost" data-act="no" ${!open || n === 0 ? 'disabled' : ''}>${esc(t('notEating'))}</button>
+        <button class="ghost" data-act="clear" ${!open || n === null ? 'disabled' : ''}>${esc(t('clear'))}</button>
+      </div>
+    </section>
+    <div class="today-side">
+      <div class="tally">
+        <div><b>${num(total)}</b><span>${esc(t('tMeals'))}</span></div>
+        <div><b>${num(eating.length)}</b><span>${esc(t('tEating'))}</span></div>
+        <div><b>${num(notEating.length)}</b><span>${esc(t('tNot'))}</span></div>
+        <div><b>${num(waiting.length)}</b><span>${esc(t('tWait'))}</span></div>
+      </div>
+      <div class="share-wrap"><a class="btn line block" target="_blank" rel="noopener" href="${esc(shareUrl())}">${ICON.wa}${esc(t('share'))}</a></div>
+      ${group(t('gEating'), eating, 'nobody')}
+      ${group(t('gWait'), waiting, 'everyoneAnswered')}
+      ${group(t('gNot'), notEating, 'nobody')}
+    </div>
+  </div>`;
+}
+function shareUrl() {
+  const url = location.origin + location.pathname;
+  const d = fmtDate(todayStr(), { day: 'numeric', month: 'short' });
+  return 'https://wa.me/?text=' + encodeURIComponent(t('shareMsg', { d, u: url }));
+}
+
+/* Voting: taps update the screen at once; only the latest value is sent. */
+let voteBusy = false, votePending, flashTimer;
+function setLocalVote(n) {
+  S.todayVotes = S.todayVotes.filter((v) => v.user_id !== S.me.id);
+  if (n !== null) S.todayVotes.push({ user_id: S.me.id, day: todayStr(), meals: n, admin_edited: false });
+}
+function vote(n) {
+  if (pollState() !== 'open') { toast(t('eClosed')); renderMain(); return; }
+  setLocalVote(n); S.savedFlash = false; votePending = n; renderMain();
+  const pl = document.getElementById('plate'); if (pl) { pl.classList.add('bump'); setTimeout(() => pl.classList.remove('bump'), 160); }
+  sendVotes();
+}
+async function sendVotes() {
+  if (voteBusy) return;
+  voteBusy = true;
+  try {
+    while (votePending !== undefined) {
+      const v = votePending; votePending = undefined;
+      if (v === null) await api.removeVote(); else await api.castVote(v);
+    }
+    invalidate(todayStr());
+    S.savedFlash = true; clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => { S.savedFlash = false; if (S.tab === 'today') renderMain(); }, 2500);
+  } catch (e) {
+    votePending = undefined; toast(errMsg(e));
+    try { await loadToday(); } catch (e2) { /* offline */ }
+  } finally { voteBusy = false; if (S.tab === 'today') renderMain(); }
+}
+
+/* ---------- Calendar ---------- */
+function monthBar() {
+  const atNow = S.month >= curMonth();
+  return `<div class="monthbar no-print">
+    <button class="btn line small" data-act="month" data-by="-1" aria-label="previous month">‹</button>
+    <strong>${esc(fmtMonth(S.month))}</strong>
+    <button class="btn line small" data-act="month" data-by="1" ${atNow ? 'disabled' : ''} aria-label="next month">›</button>
+  </div>`;
+}
+function vCal() {
+  const data = monthCache[S.month];
+  if (!data) return `<div class="page"><h2>${esc(t('calTitle'))}</h2>${monthBar()}<p class="empty">…</p></div>`;
+  const today = todayStr(), n = daysIn(S.month);
+  const mine = {}, tot = {};
+  data.votes.forEach((v) => { tot[v.day] = (tot[v.day] || 0) + v.meals; if (v.user_id === S.me.id) mine[v.day] = v.meals; });
+  const first = dateOf(S.month + '-01').getUTCDay();
+  const base = Date.UTC(2023, 0, 1); // a Sunday
+  const dows = [0, 1, 2, 3, 4, 5, 6].map((i) => `<div class="dow ${i >= 5 ? 'wk' : ''}">${esc(new Intl.DateTimeFormat(loc(), { weekday: 'short', timeZone: 'UTC' }).format(new Date(base + i * 864e5)))}</div>`).join('');
+  let cells = '';
+  for (let i = 0; i < first; i++) cells += '<div class="day pad"></div>';
+  for (let d = 1; d <= n; d++) {
+    const day = S.month + '-' + pad2(d);
+    const future = day > today, total = tot[day] || 0, m = mine[day];
+    const cls = ['day', future ? 'future' : '', !future && !total ? 'blank' : '', m > 0 ? 'ate' : '', day === today ? 'today' : '', day === S.selDay ? 'sel' : ''].join(' ');
+    cells += `<button class="${cls}" ${future ? 'disabled' : ''} data-act="day" data-day="${day}" aria-label="${esc(fmtDate(day, { day: 'numeric', month: 'long' }))}">
+      <span class="d">${num(d)}</span><span class="mine">${m > 0 ? num(m) : ''}</span><span class="tot">${total ? num(total) : '&nbsp;'}</span></button>`;
+  }
+  return `<div class="page"><h2>${esc(t('calTitle'))}</h2><p class="sub">${esc(t('calSub'))}</p>
+    <div class="cal-grid"><div>${monthBar()}
+      <div class="cal">${dows}${cells}</div>
+      <div class="legend"><span><i></i>${esc(t('legMine'))}</span><span>${esc(t('legTot'))}</span></div></div>
+      <div>${dayPanel(data)}</div></div></div>`;
+}
+function dayPanel(data) {
+  if (!S.selDay || !S.selDay.startsWith(S.month)) return `<p class="empty" style="margin-top:22px">${esc(t('pickDay'))}</p>`;
+  const day = S.selDay, votes = data.votes.filter((v) => v.day === day);
+  const voteBy = {}; votes.forEach((v) => { voteBy[v.user_id] = v; });
+  const total = votes.reduce((s, v) => s + v.meals, 0);
+  let people = S.profiles.filter((p) => voteBy[p.id] || (isAdmin() && p.active)).sort(byName);
+  if (!isAdmin()) people = people.filter((p) => voteBy[p.id]);
+  const rows = people.map((p) => {
+    const v = voteBy[p.id];
+    return `<li><span class="name">${esc(p.full_name)}${v && v.admin_edited ? ` <span class="tag edited">${esc(t('edited'))}</span>` : ''}</span>
+      <span class="count ${v && v.meals ? '' : 'zero'}">${v ? (v.meals ? '×' + num(v.meals) : '–') : ''}</span>
+      ${isAdmin() ? `<button class="icon-btn" data-act="edit" data-user="${p.id}" data-day="${day}" aria-label="${esc(t('dlgTitle'))}: ${esc(p.full_name)}">${ICON.edit}</button>` : ''}</li>`;
+  }).join('');
+  return `<section class="group" style="margin-left:0;margin-right:0"><h3>${esc(fmtDate(day, { weekday: 'long', day: 'numeric', month: 'long' }))} <small>${esc(t('dayTotal', { n: num(total) }))}</small></h3>
+    ${rows ? `<ul class="rows">${rows}</ul>` : `<p class="empty">${esc(t('noVotes'))}</p>`}</section>`;
+}
+
+/* ---------- Report ---------- */
+function reportRows(data) {
+  const meals = {}; data.votes.forEach((v) => { meals[v.user_id] = (meals[v.user_id] || 0) + v.meals; });
+  const paid = {}; data.payments.forEach((p) => { paid[p.user_id] = p.paid; });
+  return S.profiles.filter((p) => p.active || meals[p.id]).sort(byName).map((p) => ({
+    id: p.id, name: p.full_name, active: p.active, meals: meals[p.id] || 0,
+    amount: data.rate === null ? null : (meals[p.id] || 0) * data.rate, paid: !!paid[p.id],
+  }));
+}
+function vReport() {
+  const data = monthCache[S.month];
+  if (!data) return `<div class="page"><h2>${esc(t('repTitle'))}</h2>${monthBar()}<p class="empty">…</p></div>`;
+  const rows = reportRows(data), mine = rows.find((r) => r.id === S.me.id) || { meals: 0, amount: data.rate === null ? null : 0, paid: false };
+  const payTag = (r) => !r.meals ? `<span class="sub">${esc(t('nothingDue'))}</span>` : `<span class="tag ${r.paid ? 'paid' : 'unpaid'}">${esc(t(r.paid ? 'paid' : 'unpaid'))}</span>`;
+  const myCard = `<h3 class="no-print" style="margin-top:20px;font-size:17px">${esc(t('myMonth'))}</h3>
+    <div class="mine-card no-print">
+      <div class="kv"><span>${esc(t('meals'))}</span><b>${num(mine.meals)}</b></div>
+      <div class="kv"><span>${esc(t('rate'))}</span><b>${data.rate === null ? esc(t('rateNotSet')) : taka(data.rate)}</b></div>
+      <div class="kv"><span>${esc(t('amount'))}</span><b>${mine.amount === null ? '–' : taka(mine.amount)}</b></div>
+      <div class="kv"><span>${esc(t('payment'))}</span>${payTag(mine)}</div>
+    </div>`;
+  if (!isAdmin()) return `<div class="page"><h2>${esc(t('repTitle'))}</h2>${monthBar()}${myCard}</div>`;
+  const totalMeals = rows.reduce((s, r) => s + r.meals, 0);
+  const totalAmt = data.rate === null ? null : totalMeals * data.rate;
+  const rateVal = data.rate !== null ? data.rate : (data.prevRate !== null ? data.prevRate : '');
+  const body = rows.map((r) => `<tr><td>${esc(r.name)}${r.active ? '' : ` <span class="tag off">${esc(t('removedMark'))}</span>`}</td>
+    <td>${num(r.meals)}</td><td>${r.amount === null ? '–' : taka(r.amount)}</td>
+    <td>${r.meals ? `<button class="pay-btn ${r.paid ? 'paid' : 'unpaid'}" data-act="pay" data-user="${r.id}" data-paid="${r.paid ? 0 : 1}">${esc(t(r.paid ? 'paid' : 'unpaid'))}</button>` : '–'}</td></tr>`).join('');
+  return `<div class="page">
+    <h2 class="no-print">${esc(t('repTitle'))}</h2>${monthBar()}
+    <form class="rate-form no-print" data-form="rate">
+      <div class="field"><label for="rate">${esc(t('rateLabel', { m: fmtMonth(S.month) }))}</label>
+        <input id="rate" name="rate" type="number" inputmode="decimal" min="0" step="0.01" value="${esc(rateVal)}" placeholder="80"></div>
+      <button class="btn" type="submit">${esc(t('saveRate'))}</button>
+    </form>
+    <p class="sub no-print" style="margin-top:6px">${esc(data.rate === null ? t('rateNotSet') + '. ' : '')}${esc(t('rateHint'))}</p>
+    <div class="print-head"><h1>${esc(t('xlTitle'))}</h1><p>${esc(fmtMonth(S.month))}<br>${esc(t('rate'))}: ${data.rate === null ? '–' : taka(data.rate)}</p></div>
+    ${rows.length ? `<div class="table-wrap"><table class="report">
+      <thead><tr><th>${esc(t('colName'))}</th><th>${esc(t('colMeals'))}</th><th>${esc(t('colAmt'))}</th><th>${esc(t('colPay'))}</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr><td>${esc(t('total'))}</td><td>${num(totalMeals)}</td><td>${totalAmt === null ? '–' : taka(totalAmt)}</td><td></td></tr></tfoot>
+    </table></div>
+    <p class="sub no-print" style="margin-top:8px">${esc(t('tapToggle'))}</p>
+    <div class="actions no-print">
+      <button class="btn" data-act="excel">${esc(t('excel'))}</button>
+      <button class="btn line" data-act="print">${esc(t('pdf'))}</button>
+    </div>` : `<p class="empty">${esc(t('noMeals'))}</p>`}
+    ${myCard}
+  </div>`;
+}
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function exportExcel() {
+  const data = monthCache[S.month]; if (!data) return;
+  if (!window.XLSX) await loadScript('vendor/xlsx.mini.min.js');
+  const rows = reportRows(data), n = daysIn(S.month);
+  const totalMeals = rows.reduce((s, r) => s + r.meals, 0);
+  const sum = [[t('xlTitle')], [fmtMonth(S.month)], [t('rate'), data.rate === null ? '' : data.rate], [],
+    [t('colName'), t('colMeals'), t('colAmt'), t('colPay')],
+    ...rows.map((r) => [r.name, r.meals, r.amount === null ? '' : r.amount, r.meals ? t(r.paid ? 'paid' : 'unpaid') : '']),
+    [t('total'), totalMeals, data.rate === null ? '' : totalMeals * data.rate, '']];
+  const grid = {}; data.votes.forEach((v) => { (grid[v.user_id] = grid[v.user_id] || {})[Number(v.day.slice(8))] = v.meals; });
+  const days = Array.from({ length: n }, (_, i) => i + 1);
+  const daily = [[t('colName'), ...days, t('total')],
+    ...rows.map((r) => [r.name, ...days.map((d) => (grid[r.id] && grid[r.id][d] != null ? grid[r.id][d] : '')), r.meals]),
+    [t('total'), ...days.map((d) => rows.reduce((s, r) => s + ((grid[r.id] && grid[r.id][d]) || 0), 0)), totalMeals]];
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(sum); ws1['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 14 }];
+  const ws2 = XLSX.utils.aoa_to_sheet(daily); ws2['!cols'] = [{ wch: 28 }, ...days.map(() => ({ wch: 4 })), { wch: 8 }];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+  XLSX.utils.book_append_sheet(wb, ws2, 'Daily');
+  XLSX.writeFile(wb, 'meal-report-' + S.month + '.xlsx');
+}
+
+/* ---------- People (admin) ---------- */
+function vPeople() {
+  if (!isAdmin()) return '';
+  if (!S.members) return `<div class="page"><h2>${esc(t('peopleTitle'))}</h2><p class="empty">…</p></div>`;
+  const weekAgo = Date.now() - 7 * 864e5;
+  const roleName = { owner: t('roleOwner'), admin: t('roleAdmin'), member: t('roleMember') };
+  const rows = S.members.map((m) => {
+    const fresh = new Date(m.created_at).getTime() > weekAgo && m.role === 'member';
+    const canRemove = m.role !== 'owner' && m.id !== S.me.id && (m.role !== 'admin' || isOwner());
+    let btns = '';
+    if (canRemove) btns += m.active ? `<button class="btn danger small" data-act="remove" data-user="${m.id}">${esc(t('remove'))}</button>` : `<button class="btn line small" data-act="restore" data-user="${m.id}">${esc(t('restore'))}</button>`;
+    if (isOwner() && m.active && m.role === 'member') btns += `<button class="btn line small" data-act="mkadmin" data-user="${m.id}">${esc(t('makeAdmin'))}</button>`;
+    if (isOwner() && m.role === 'admin') btns += `<button class="btn line small" data-act="rmadmin">${esc(t('dropAdmin'))}</button>`;
+    return `<li class="person"><span class="name">${esc(m.full_name)}
+        ${m.role !== 'member' ? ` <span class="tag">${esc(roleName[m.role])}</span>` : ''}${fresh ? ` <span class="tag new">${esc(t('isNew'))}</span>` : ''}${m.active ? '' : ` <span class="tag off">${esc(t('removedMark'))}</span>`}
+        <small>${esc(m.email || '')}</small></span>
+      ${btns ? `<span class="person-btns">${btns}</span>` : ''}</li>`;
+  }).join('');
+  return `<div class="page"><h2>${esc(t('peopleTitle'))}</h2><p class="sub">${esc(t('peopleSub'))}</p><ul class="rows" style="margin-top:10px">${rows}</ul></div>`;
+}
+
+/* ---------- Profile ---------- */
+function vMe() {
+  const data = monthCache[curMonth()];
+  const roleName = { owner: t('roleOwner'), admin: t('roleAdmin'), member: t('roleMember') }[S.me.role];
+  let month = '';
+  if (data) {
+    const meals = data.votes.filter((v) => v.user_id === S.me.id).reduce((s, v) => s + v.meals, 0);
+    const paid = (data.payments.find((p) => p.user_id === S.me.id) || {}).paid;
+    month = `<h3 style="margin-top:22px;font-size:17px">${esc(t('thisMonth'))}: ${esc(fmtMonth(curMonth()))}</h3><div class="mine-card">
+      <div class="kv"><span>${esc(t('meals'))}</span><b>${num(meals)}</b></div>
+      <div class="kv"><span>${esc(t('amount'))}</span><b>${data.rate === null ? esc(t('rateNotSet')) : taka(meals * data.rate)}</b></div>
+      <div class="kv"><span>${esc(t('payment'))}</span>${meals ? `<span class="tag ${paid ? 'paid' : 'unpaid'}">${esc(t(paid ? 'paid' : 'unpaid'))}</span>` : `<span class="sub">${esc(t('nothingDue'))}</span>`}</div></div>`;
+  }
+  return `<div class="page" style="max-width:560px"><h2>${esc(t('meTitle'))}</h2>
+    <form data-form="name" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="nm">${esc(t('yourName'))}</label><input id="nm" name="name" maxlength="60" required value="${esc(S.me.full_name)}"></div>
+      <button class="btn line" type="submit">${esc(t('saveName'))}</button>
+    </form>
+    <div class="mine-card" style="margin-top:16px">
+      <div class="kv"><span>${esc(t('email'))}</span><b style="font-size:16px;font-weight:500;overflow-wrap:anywhere">${esc(S.session.user.email || '')}</b></div>
+      <div class="kv"><span>${esc(t('role'))}</span><b style="font-size:16px">${esc(roleName)}</b></div>
+      <div class="kv"><span>${esc(t('language'))}</span><button class="btn line small" data-act="lang">${esc(t('langOther'))}</button></div>
+    </div>
+    ${month}
+    <h3 style="margin-top:22px;font-size:17px">${esc(t('notif'))} <span class="tag ${S.pushOn ? 'paid' : ''}">${esc(t(S.pushOn ? 'notifIsOn' : 'notifIsOff'))}</span></h3>
+    <p class="sub" style="margin-top:4px">${esc(t('notifHelp'))}</p>
+    <p class="sub" style="margin-top:4px">${esc(t('notifIos'))}</p>
+    <button class="btn ${S.pushOn ? 'line' : ''} block" style="margin-top:10px" data-act="${S.pushOn ? 'pushoff' : 'pushon'}">${esc(t(S.pushOn ? 'notifOff' : 'notifOn'))}</button>
+    <button class="btn danger block" style="margin-top:28px" data-act="signout">${esc(t('signOut'))}</button>
+  </div>`;
+}
+
+/* ---------- Auth screens ---------- */
+function authShell(inner) {
+  $app.innerHTML = `<div class="auth"><div class="auth-hero">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div class="brand"><span class="brand-dot"></span>${esc(t('app'))}</div>
+      <button class="lang-btn" data-act="lang">${esc(t('langBtn'))}</button></div>
+      <h1>${esc(t('authTitle'))}</h1><p>${esc(t('authSub'))}</p></div>${inner}</div>`;
+}
+function renderAuth() {
+  const up = S.authMode === 'up';
+  authShell(`<form data-form="auth" novalidate>
+    ${S.authMsg ? `<div class="msg ${S.authMsg.ok ? 'ok' : 'err'}" role="alert">${esc(S.authMsg.text)}</div>` : ''}
+    ${up ? `<div class="field"><label for="a-name">${esc(t('name'))}</label><input id="a-name" name="name" autocomplete="name" maxlength="60" required></div>` : ''}
+    <div class="field"><label for="a-email">${esc(t('email'))}</label><input id="a-email" name="email" type="email" autocomplete="email" inputmode="email" required></div>
+    <div class="field"><label for="a-pw">${esc(t('password'))}</label><input id="a-pw" name="password" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" minlength="6" required ${up ? `placeholder="${esc(t('pwHint'))}"` : ''}></div>
+    <button class="btn block" type="submit">${esc(t(up ? 'signUp' : 'signIn'))}</button>
+    <button class="linkish" type="button" data-act="authmode">${esc(t(up ? 'toSignIn' : 'toSignUp'))}</button>
+    ${up ? '' : `<button class="linkish" type="button" data-act="forgot">${esc(t('forgot'))}</button>`}
+  </form>`);
+}
+function renderRecovery() {
+  authShell(`<form data-form="newpw">
+    ${S.authMsg ? `<div class="msg err" role="alert">${esc(S.authMsg.text)}</div>` : ''}
+    <div class="field"><label for="n-pw">${esc(t('newPw'))}</label><input id="n-pw" name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="${esc(t('pwHint'))}"></div>
+    <button class="btn block" type="submit">${esc(t('setPw'))}</button></form>`);
+}
+function renderRemoved() {
+  authShell(`<div style="padding:26px 22px"><h2 style="font-size:22px">${esc(t('removedTitle'))}</h2><p class="sub" style="margin-top:8px">${esc(t('removedSub'))}</p>
+    <button class="btn line block" style="margin-top:20px" data-act="signout">${esc(t('signOut'))}</button></div>`);
+}
+
+/* ---------- Toast + admin dialog ---------- */
+let toastTimer;
+function toast(text) {
+  document.querySelectorAll('.toast').forEach((n) => n.remove());
+  const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = text;
+  document.body.appendChild(el); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.remove(), 3200);
+}
+const $dlg = document.getElementById('dlg');
+let dlgState = null;
+async function openEdit(user, day) {
+  let cur = null;
+  if (day === todayStr()) cur = S.todayVotes.find((v) => v.user_id === user) || null;
+  else { const d = monthCache[day.slice(0, 7)]; cur = d ? d.votes.find((v) => v.user_id === user && v.day === day) || null : null; }
+  dlgState = { user, day, n: cur ? cur.meals : 1, had: !!cur };
+  drawDlg(); $dlg.showModal();
+}
+function drawDlg() {
+  const s = dlgState;
+  $dlg.innerHTML = `<h3>${esc(t('dlgTitle'))}</h3><p class="sub">${esc(nameOf(s.user))}, ${esc(fmtDate(s.day, { day: 'numeric', month: 'long' }))}</p>
+    <div class="dlg-step"><button data-act="dminus" aria-label="−1" ${s.n <= 0 ? 'disabled' : ''}>−</button><output>${num(s.n)}</output><button data-act="dplus" aria-label="+1" ${s.n >= ADMIN_MAX ? 'disabled' : ''}>+</button></div>
+    <p class="sub" style="text-align:center">${esc(s.n === 0 ? t('gNot') : t('dayTotal', { n: num(s.n) }))}</p>
+    <div class="dlg-actions"><button class="btn" data-act="dsave">${esc(t('dlgSave'))}</button>
+      ${s.had ? `<button class="btn danger" data-act="dclear">${esc(t('dlgClear'))}</button>` : ''}
+      <button class="btn line" data-act="dcancel">${esc(t('cancel'))}</button></div>`;
+}
+async function saveEdit(meals) {
+  const s = dlgState; $dlg.close();
+  try {
+    await api.adminSetVote(s.user, s.day, meals);
+    invalidate(s.day);
+    if (s.day === todayStr()) await loadToday();
+    if (S.tab !== 'today') await loadMonth(S.month, true);
+    toast(t('corrected'));
+  } catch (e) { toast(errMsg(e)); }
+  renderMain();
+}
+
+/* ---------- Notifications ---------- */
+function b64ToBytes(b64) { const p = '='.repeat((4 - b64.length % 4) % 4); const raw = atob((b64 + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(raw, (c) => c.charCodeAt(0)); }
+const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+async function syncPush() {
+  if (DEMO || !pushSupported()) return;
+  try {
+    const reg = await navigator.serviceWorker.register('sw.js');
+    const sub = await reg.pushManager.getSubscription();
+    S.pushOn = !!sub && Notification.permission === 'granted';
+    if (S.pushOn) { const j = sub.toJSON(); await api.savePush(j.endpoint, j.keys.p256dh, j.keys.auth); }
+    if (S.tab === 'me') renderMain();
+  } catch (e) { console.warn('push sync', e); }
+}
+async function pushOn() {
+  if (DEMO || !CFG.VAPID_PUBLIC_KEY) return toast(t('notifNotSetup'));
+  if (!pushSupported()) return toast(t('notifUnsupported') + ' ' + t('notifIos'));
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') return toast(t('notifDenied'));
+  try {
+    const reg = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(CFG.VAPID_PUBLIC_KEY) });
+    const j = sub.toJSON(); await api.savePush(j.endpoint, j.keys.p256dh, j.keys.auth);
+    S.pushOn = true; toast(t('notifDone'));
+  } catch (e) { toast(errMsg(e)); }
+  renderMain();
+}
+async function pushOff() {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    if (sub) { await api.deletePush(sub.endpoint); await sub.unsubscribe(); }
+    S.pushOn = false; toast(t('notifStopped'));
+  } catch (e) { toast(errMsg(e)); }
+  renderMain();
+}
+
+/* =====================================================================
+   Events
+   ===================================================================== */
+async function goTab(tab) {
+  S.tab = tab; render(); window.scrollTo(0, 0);
+  try {
+    if (tab === 'today') await loadToday();
+    if (tab === 'cal' || tab === 'report') await loadMonth(S.month);
+    if (tab === 'me') await loadMonth(curMonth());
+    if (tab === 'people') S.members = await api.members();
+  } catch (e) { toast(errMsg(e)); }
+  if (S.tab === tab) renderMain();
+}
+const ACT = {
+  lang() { S.lang = S.lang === 'bn' ? 'en' : 'bn'; lsSet('meal.lang', S.lang); if ($dlg.open) drawDlg(); renderMain(); },
+  tab(el) { goTab(el.dataset.tab); },
+  plus() { const v = myVote(); vote(Math.min((v ? v.meals : 0) + 1, MAX_MEALS)); },
+  minus() { const v = myVote(); if (v && v.meals > 0) vote(v.meals - 1); },
+  no() { vote(0); },
+  clear() { vote(null); },
+  async month(el) { S.month = shiftMonth(S.month, Number(el.dataset.by)); if (S.month > curMonth()) S.month = curMonth(); S.selDay = null; renderMain(); try { await loadMonth(S.month); } catch (e) { toast(errMsg(e)); } renderMain(); },
+  day(el) { S.selDay = el.dataset.day; renderMain(); },
+  edit(el) { openEdit(el.dataset.user, el.dataset.day); },
+  dplus() { dlgState.n = Math.min(dlgState.n + 1, ADMIN_MAX); drawDlg(); },
+  dminus() { dlgState.n = Math.max(dlgState.n - 1, 0); drawDlg(); },
+  dsave() { saveEdit(dlgState.n); },
+  dclear() { saveEdit(null); },
+  dcancel() { $dlg.close(); },
+  async pay(el) {
+    try { await api.setPaid(el.dataset.user, S.month, el.dataset.paid === '1'); await loadMonth(S.month, true); } catch (e) { toast(errMsg(e)); }
+    renderMain();
+  },
+  excel() { exportExcel().catch((e) => toast(errMsg(e))); },
+  print() { window.print(); },
+  async remove(el) { if (!confirm(t('confirmRemove', { n: nameOf(el.dataset.user) }))) return; await peopleOp(() => api.setActive(el.dataset.user, false)); },
+  async restore(el) { await peopleOp(() => api.setActive(el.dataset.user, true)); },
+  async mkadmin(el) { if (!confirm(t('confirmAdmin', { n: nameOf(el.dataset.user) }))) return; await peopleOp(() => api.setAdmin(el.dataset.user)); },
+  async rmadmin() { await peopleOp(() => api.setAdmin(null)); },
+  pushon() { pushOn(); }, pushoff() { pushOff(); },
+  async signout() { await api.signOut(); S.session = null; S.me = null; S.tab = 'today'; S.authMsg = null; if (DEMO) location.reload(); else render(); },
+  authmode() { S.authMode = S.authMode === 'up' ? 'in' : 'up'; S.authMsg = null; render(); },
+  async forgot() {
+    const email = (document.getElementById('a-email').value || '').trim();
+    if (!email) { S.authMsg = { text: t('enterEmail') }; return render(); }
+    try { await api.resetPassword(email); S.authMsg = { ok: true, text: t('resetSent') }; } catch (e) { S.authMsg = { text: errMsg(e) }; }
+    render();
+  },
+};
+async function peopleOp(fn) {
+  try { await fn(); S.members = await api.members(); S.profiles = await api.profiles(); S.me = await api.myProfile(); await loadToday(); } catch (e) { toast(errMsg(e)); }
+  renderMain();
+}
+document.addEventListener('click', (ev) => {
+  const el = ev.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const fn = ACT[el.dataset.act]; if (fn) fn(el);
+});
+document.addEventListener('submit', async (ev) => {
+  const form = ev.target.closest('[data-form]'); if (!form) return;
+  ev.preventDefault();
+  const f = Object.fromEntries(new FormData(form).entries());
+  const kind = form.dataset.form;
+  try {
+    if (kind === 'auth') {
+      const email = (f.email || '').trim(), pw = f.password || '';
+      if (pw.length < 6) throw new Error('password 6');
+      if (S.authMode === 'up') {
+        const session = await api.signUp((f.name || '').trim(), email, pw);
+        if (!session) { S.authMode = 'in'; S.authMsg = { ok: true, text: t('checkEmail') }; return render(); }
+        S.session = session;
+      } else S.session = await api.signIn(email, pw);
+      S.authMsg = null; await start();
+    } else if (kind === 'newpw') {
+      if ((f.password || '').length < 6) throw new Error('password 6');
+      await api.updatePassword(f.password); S.recovery = false; S.authMsg = null;
+      S.session = await api.session(); await start(); toast(t('pwSet'));
+    } else if (kind === 'rate') {
+      const rate = parseFloat(f.rate);
+      if (!(rate >= 0)) return toast(t('eRate'));
+      await api.setRate(S.month, rate); await loadMonth(S.month, true); toast(t('rateSaved')); renderMain();
+    } else if (kind === 'name') {
+      const name = (f.name || '').trim(); if (!name) return;
+      await api.updateName(name); S.me = await api.myProfile(); S.profiles = await api.profiles(); toast(t('nameSaved')); renderMain();
+    }
+  } catch (e) {
+    if (kind === 'auth' || kind === 'newpw') { S.authMsg = { text: errMsg(e) }; render(); } else toast(errMsg(e));
+  }
+});
+
+/* ---------- Start-up and refresh ---------- */
+async function start() {
+  S.month = curMonth();
+  render();
+  await loadCore();
+  render();
+  if (S.me && S.me.active) syncPush();
+}
+let lastState = null, lastDay = null;
+async function tick() {
+  if (!S.session || !S.me || !S.me.active) return;
+  const st = pollState(), day = todayStr();
+  if (lastDay && day !== lastDay) { S.month = curMonth(); }
+  const changed = st !== lastState || day !== lastDay; lastState = st; lastDay = day;
+  if (S.tab !== 'today' || $dlg.open) return;
+  if (!voteBusy && document.visibilityState === 'visible') { try { await loadToday(); } catch (e) { /* offline */ } }
+  if (!voteBusy && S.tab === 'today' && !$dlg.open) renderMain();
+  else if (changed) renderMain();
+}
+setInterval(tick, 30000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(); });
+
+(async function boot() {
+  try {
+    if (!DEMO && !window.supabase) throw new Error('Supabase library did not load');
+    api = DEMO ? demoApi() : supabaseApi();
+    api.onAuth((ev, session) => {
+      if (ev === 'PASSWORD_RECOVERY') { S.recovery = true; S.session = session; render(); }
+      else if (ev === 'SIGNED_OUT') { S.session = null; S.me = null; render(); }
+      else if (ev === 'TOKEN_REFRESHED' && session) { S.session = session; }
+    });
+    S.session = await api.session();
+    if (S.session) await start(); else render();
+    lastState = pollState(); lastDay = todayStr();
+  } catch (e) {
+    console.error(e);
+    $app.innerHTML = '<p class="center-note">Could not start the app. Check config.js and your connection, then reload.</p>';
+  }
+})();
+</script>
+</body>
+</html>

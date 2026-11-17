@@ -1,0 +1,15 @@
+{
+  "name": "Office Meal",
+  "short_name": "Meal",
+  "description": "Daily office meal count, 8:00 to 11:30 am",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F8F1",
+  "theme_color": "#0E4F3D",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

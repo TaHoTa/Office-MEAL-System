@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notification keys: Office Meal setup</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 720px; margin: 32px auto; padding: 0 16px; color: #14231D; }
+  button { font: inherit; padding: 10px 18px; border-radius: 8px; border: 0; background: #0E4F3D; color: #fff; cursor: pointer; }
+  textarea { width: 100%; box-sizing: border-box; font: 13px/1.4 ui-monospace, monospace; padding: 10px; border-radius: 8px; border: 1px solid #b9c4bb; }
+  label { display: block; font-weight: 600; margin: 20px 0 6px; }
+  p.note { color: #4c5b53; font-size: 14px; margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<h1>Notification keys</h1>
+<p>Press the button once. The keys are created inside your browser; nothing is sent anywhere.
+Use this page one time only: making new keys later disconnects everyone's notifications.</p>
+<button id="go">Create keys</button>
+
+<label for="pub">VAPID_PUBLIC_KEY</label>
+<textarea id="pub" rows="2" readonly></textarea>
+<p class="note">Goes in two places: <code>config.js</code> (VAPID_PUBLIC_KEY) and the Supabase function secret of the same name.</p>
+
+<label for="priv">VAPID_PRIVATE_KEY</label>
+<textarea id="priv" rows="4" readonly></textarea>
+<p class="note">Goes only in the Supabase function secret. Keep it private: never put it in GitHub.</p>
+
+<label for="cron">CRON_SECRET</label>
+<textarea id="cron" rows="2" readonly></textarea>
+<p class="note">Goes in the Supabase function secret and in <code>2_reminder.sql</code>.</p>
+
+<script>
+const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
+  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+document.getElementById('go').onclick = async () => {
+  const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  document.getElementById('pub').value = b64url(await crypto.subtle.exportKey('raw', pair.publicKey));
+  const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+  document.getElementById('priv').value = JSON.stringify({ kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, d: jwk.d });
+  document.getElementById('cron').value = b64url(crypto.getRandomValues(new Uint8Array(32)));
+};
+</script>
+</body>
+</html>
